@@ -1,1 +1,1 @@
-# 2024-FALL-NYCU-
+# 2024-FALL-NYCU-AI-Intro
