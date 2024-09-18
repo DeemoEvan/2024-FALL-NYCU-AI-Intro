@@ -45,9 +45,7 @@ def update_centroids(X, labels, k):
     return centroids
 
 def kmeans_clustering(X, k, max_iters=100):
-    """
-    K-means clustering algorithm using numpy.
-    """
+
     centroids = initialize_centroids_kmeans_plus_plus(X, k)
     for _ in range(max_iters):
         distances = compute_distances(X, centroids)
@@ -59,10 +57,9 @@ def kmeans_clustering(X, k, max_iters=100):
     return labels
 
 if __name__ == "__main__":
-    # load data
+
     X = np.load("./data.npy") # size: [10000, 512]
 
-    # Choose the number of clusters
     n_clusters = 13
 
     y = kmeans_clustering(X, k=n_clusters)
