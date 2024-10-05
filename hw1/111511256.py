@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     X = np.load("./data.npy") # size: [10000, 512]
 
-    n_clusters = 13
+    n_clusters = 10
 
     y = kmeans_clustering(X, k=n_clusters)
 
