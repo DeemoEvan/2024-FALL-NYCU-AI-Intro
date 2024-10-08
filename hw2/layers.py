@@ -37,7 +37,7 @@ class Layer(abc.ABC):
                 gradient with respect to the input of the layer.
         """
         return NotImplemented
-
+        
     def params(self) -> List[np.ndarray]:
         """Return the parameters of the parameters.
 
@@ -116,25 +116,33 @@ class Sequential(Layer):
 
 class MatMul(Layer):
     """Matrix multiplication layer.
-
+    
     Parameters:
         W (`np.ndarray`):
-            weight matrix with shape `(input_dim, output_dim)`.
+            weight matrix with shape `(input_dim, output_dim)`
     """
     def __init__(self, W: np.ndarray):
-        self.W = W
+        #assert W.ndim == 2, "Weight matrix W must be 2D"
+        self.W = W  # Weight matrix
+        self.x = None  # To store input for the backward pass
+        self.grad_W = None  # To store the gradient with respect to W
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        pass
+        #assert x.ndim == 2, "Input x must be 2D"
+        self.x = x  # Save input for the backward pass
+        return x @ self.W  # Perform matrix multiplication
 
     def backward(self, grad: np.ndarray) -> np.ndarray:
-        pass
+        #assert grad.ndim == 2, "Gradient grad must be 2D"
+        grad_input = grad @ self.W.T  # Gradient with respect to input x
+        self.grad_W = self.x.T @ grad  # Gradient with respect to weights W
+        return grad_input
 
     def params(self) -> List[np.ndarray]:
         return [self.W]
 
     def grads(self) -> List[np.ndarray]:
-        pass
+        return [self.grad_W]
 
 
 class Bias(Layer):
@@ -145,19 +153,24 @@ class Bias(Layer):
             bias vector with shape `(output_dim,)`.
     """
     def __init__(self, b: np.ndarray):
-        self.b = b
+        self.b = b # Bias vector
+        self.grad_b = None  # To store the gradient with respect to the bias
+        self.x = None  # To store input for the backward pass
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        pass
+        self.x = x  # Save input for the backward pass
+        return x + self.b  # Add the bias to each input element-wise
 
     def backward(self, grad: np.ndarray) -> np.ndarray:
-        pass
+        # Compute the gradient with respect to the bias
+        self.grad_b = np.sum(grad, axis=0)  # Sum over batch to get gradient with respect to bias
+        return grad  # The gradient with respect to input is unchanged
 
     def params(self) -> List[np.ndarray]:
         return [self.b]
 
     def grads(self) -> List[np.ndarray]:
-        pass
+        return [self.grad_b]
 
 
 class ReLU(Layer):
@@ -173,8 +186,15 @@ class ReLU(Layer):
 
 
 class Softmax(Layer):
-    def forward(self, x):
-        pass
+        
+    def forward(self, x: np.ndarray) -> np.ndarray:
+        # For numerical stability, we shift the input by subtracting max
+        self.cache = x
+        exp_x = np.exp(x)
+        sum_exp_x = exp_x.sum(axis=1, keepdims=True)
+        self.y = exp_x / sum_exp_x
+        return self.y
 
-    def backward(self, grad):
-        pass
+    def backward(self, grad: np.ndarray) -> np.ndarray:
+        y = self.forward(self.cache)
+        return grad - y*(grad.sum(axis = 0))  # Shape: (batch_size, num_classes)

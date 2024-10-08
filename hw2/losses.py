@@ -42,6 +42,10 @@ class Loss(abc.ABC):
 
 
 class CrossEntropy(Loss):
+    def __init__(self):
+        self.y_pred = None  # Store the predicted probabilities
+        self.y_true = None  # Store the true labels
+        
     def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
         """
         Compute the cross-entropy loss between the predicted probabilities and
@@ -56,7 +60,24 @@ class CrossEntropy(Loss):
                 A 1D array of true labels, where each label is an integer in
                 the range [0, num_classes).
         """
-        pass
+        # Convert labels to one-hot encoding
+        self.y_pred = y_pred
+        self.y_true = y_true
+        batch_size = self.y_pred.shape[0]
+
+        # Calculate the cross-entropy loss
+        loss = -np.emath.log(self.y_pred[np.arange(batch_size), self.y_true])
+        return loss
 
     def backward(self, grad: np.ndarray) -> np.ndarray:
-        pass
+        batch_size = self.y_pred.shape[0]
+        # Convert labels to one-hot encoding
+        y_one_hot = np.zeros_like(self.y_pred)
+        #print(y_one_hot.shape)
+        #print(grad.shape)
+        y_one_hot[np.arange(batch_size), self.y_true] = -1 / self.y_pred[np.arange(batch_size), self.y_true]
+        #y_one_hot = y_one_hot / batch_size
+        y_out = grad.T @ y_one_hot
+        #print(y_out.shape)
+        # Calculate the gradient
+        return y_out
