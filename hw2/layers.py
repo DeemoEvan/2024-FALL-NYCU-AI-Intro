@@ -186,15 +186,24 @@ class ReLU(Layer):
 
 
 class Softmax(Layer):
+    def __init__(self):
+        self.y = None
         
     def forward(self, x: np.ndarray) -> np.ndarray:
-        # For numerical stability, we shift the input by subtracting max
-        self.cache = x
+        # Numerical stability: shift values of x by subtracting the max per row
         exp_x = np.exp(x)
         sum_exp_x = exp_x.sum(axis=1, keepdims=True)
-        self.y = exp_x / sum_exp_x
+        self.y = exp_x / sum_exp_x  # Softmax output
         return self.y
 
     def backward(self, grad: np.ndarray) -> np.ndarray:
-        y = self.forward(self.cache)
-        return grad - y*(grad.sum(axis = 0))  # Shape: (batch_size, num_classes)
+        y = self.y  # Softmax output from the forward pass
+        #print(grad.shape)
+        #print(y.shape)
+        # Compute the sum of grad * y for each sample
+        grad_sum = (grad * y).sum(axis=1, keepdims=True)
+
+        # Calculate the final gradient
+        grad_output = y * (grad - grad_sum)
+
+        return grad_output

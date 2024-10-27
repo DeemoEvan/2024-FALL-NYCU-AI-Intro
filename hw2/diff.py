@@ -25,7 +25,7 @@ def main():
         with open(pkl_path, "rb") as f:
             grads_np = pickle.load(f)
 
-        pkl_path = pkl_path.replace(args.grads_np, args.grads_pt)
+        pkl_path = os.path.join(args.grads_pt, os.path.basename(pkl_path))
         with open(pkl_path, "rb") as f:
             grads_pt = pickle.load(f)
 

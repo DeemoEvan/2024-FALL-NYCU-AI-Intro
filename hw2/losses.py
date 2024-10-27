@@ -45,7 +45,7 @@ class CrossEntropy(Loss):
     def __init__(self):
         self.y_pred = None  # Store the predicted probabilities
         self.y_true = None  # Store the true labels
-        
+
     def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
         """
         Compute the cross-entropy loss between the predicted probabilities and
@@ -60,24 +60,38 @@ class CrossEntropy(Loss):
                 A 1D array of true labels, where each label is an integer in
                 the range [0, num_classes).
         """
-        # Convert labels to one-hot encoding
+        # Save predictions and true labels for backward pass
         self.y_pred = y_pred
         self.y_true = y_true
         batch_size = self.y_pred.shape[0]
-
-        # Calculate the cross-entropy loss
-        loss = -np.emath.log(self.y_pred[np.arange(batch_size), self.y_true])
+        """ for i in range(batch_size):
+            print(np.sum(self.y_pred[i])) """
+        # Calculate the cross-entropy loss for each sample
+        loss = - np.log(self.y_pred[np.arange(batch_size), self.y_true])
+        """ for i in range(batch_size):
+            print(loss[i]) """
+        
         return loss
 
     def backward(self, grad: np.ndarray) -> np.ndarray:
+        
         batch_size = self.y_pred.shape[0]
-        # Convert labels to one-hot encoding
-        y_one_hot = np.zeros_like(self.y_pred)
-        #print(y_one_hot.shape)
-        #print(grad.shape)
-        y_one_hot[np.arange(batch_size), self.y_true] = -1 / self.y_pred[np.arange(batch_size), self.y_true]
-        #y_one_hot = y_one_hot / batch_size
-        y_out = grad.T @ y_one_hot
-        #print(y_out.shape)
-        # Calculate the gradient
-        return y_out
+        
+        # Calculate the gradient with respect to the predicted probabilities
+        grad_output = np.zeros_like(self.y_pred)
+        grad_output[np.arange(batch_size), self.y_true] = -1 / self.y_pred[np.arange(batch_size), self.y_true]
+        
+        # Normalize the gradient by batch size and multiply by the incoming gradient
+        result = grad_output * grad[:, None]
+        """ for i in range(batch_size):
+            print(np.sum(result[i])) """
+
+        # 使用 numpy.nditer 迭代每個元素並格式化輸出
+        """ it = np.nditer(result, flags=['multi_index'])
+        while not it.finished:
+            print(f"{it[0]:.5f}", end=' ')
+            if it.multi_index[1] == result.shape[1] - 1:
+                print()  # 換行
+            it.iternext() """
+
+        return result

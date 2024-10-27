@@ -29,15 +29,6 @@ def main():
     model.append(MatMul(np.random.randn(128, 128) * 0.1))
     model.append(Bias(np.random.randn(128) * 0.1))
     model.append(ReLU())
-    model.append(MatMul(np.random.randn(128, 128) * 0.1))
-    model.append(Bias(np.random.randn(128) * 0.1))
-    model.append(ReLU())
-    model.append(MatMul(np.random.randn(128, 128) * 0.1))
-    model.append(Bias(np.random.randn(128) * 0.1))
-    model.append(ReLU())
-    model.append(MatMul(np.random.randn(128, 128) * 0.1))
-    model.append(Bias(np.random.randn(128) * 0.1))
-    model.append(ReLU())
     model.append(MatMul(np.random.randn(128, args.output_shape) * 0.1))
     model.append(Bias(np.random.randn(args.output_shape) * 0.1))
     model.append(Softmax())
@@ -63,7 +54,6 @@ def main():
             # backward
             grad = np.ones_like(loss) / args.batch_size
             model.backward(loss_fn.backward(grad))
-
             # save gradients
             with open(f"{args.output_dir}/iter{iter:02d}.pkl", "wb") as f:
                 pickle.dump(model.grads(), f)

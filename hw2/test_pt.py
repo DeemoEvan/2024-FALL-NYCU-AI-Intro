@@ -63,15 +63,6 @@ def main():
     model.append(MatMul(np.random.randn(128, 128) * 0.1))
     model.append(Bias(np.random.randn(128) * 0.1))
     model.append(ReLU())
-    model.append(MatMul(np.random.randn(128, 128) * 0.1))
-    model.append(Bias(np.random.randn(128) * 0.1))
-    model.append(ReLU())
-    model.append(MatMul(np.random.randn(128, 128) * 0.1))
-    model.append(Bias(np.random.randn(128) * 0.1))
-    model.append(ReLU())
-    model.append(MatMul(np.random.randn(128, 128) * 0.1))
-    model.append(Bias(np.random.randn(128) * 0.1))
-    model.append(ReLU())
     model.append(MatMul(np.random.randn(128, args.output_shape) * 0.1))
     model.append(Bias(np.random.randn(args.output_shape) * 0.1))
     model.append(Softmax())
@@ -93,6 +84,7 @@ def main():
             # forward
             y_pred = model(x)
             loss = loss_fn(y_pred, y_true)
+            
             loss_mean = torch.sum(loss) / args.batch_size
             pbar.write(f"iter: {iter:02d}, loss: {loss_mean.item():.5f}")
 
@@ -100,10 +92,12 @@ def main():
             model.zero_grad()
             loss_mean.backward()
 
+            
             # collect gradients
             grads = []
             for param in model.parameters():
                 grads.append(param.grad.numpy())
+            #print(grads)
             # save gradients
             with open(f"{args.output_dir}/iter{iter:02d}.pkl", "wb") as f:
                 pickle.dump(grads, f)
